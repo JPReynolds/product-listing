@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
 import { useProductParams } from "@/hooks/use-product-params";
+import { ProductSort } from "@/components/product-sort";
 
 const headingId = "product-listing-heading";
 
@@ -42,10 +43,11 @@ export default function ProductListing() {
           <ProductListSkeleton />
         ) : (
           data && (
-            <>
+            <div className="flex flex-col gap-4">
+              <ProductSort />
               <ProductList products={data.products} />
               <ProductPagination pagination={data.pagination} />
-            </>
+            </div>
           )
         )}
       </section>

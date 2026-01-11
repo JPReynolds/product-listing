@@ -3,14 +3,14 @@
 ## TODO
 
 - install and setup tooling ✅
-  - RR, RQ, tailwind, shadcn
+  - RR, RQ, tailwind, shadcn, nuqs
 - route config ✅
 - api types ✅
 - fetchProducts (+ productsQueryOptions) ✅
 - ProductListing page ✅
 - styling ✅
 - Sorting
-- Pagination
+- Pagination ✅
 - Filtering
 - error handling
 
@@ -19,4 +19,4 @@
 - fix pagination logic, show ellipsis etc
 - show discounted price ✅
 - show if is out of stock
-- prefetch next page
+- prefetch next page ✅

@@ -7,7 +7,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "./ui/pagination";
-import { useSearchParams } from "react-router";
 import { useProductParams } from "@/hooks/use-product-params";
 
 export const ProductPagination = ({
@@ -15,9 +14,9 @@ export const ProductPagination = ({
 }: {
   pagination: Pagination;
 }) => {
-  const [searchParams] = useSearchParams();
+  const [queryStates] = useProductParams();
 
-  const [{ page }] = useProductParams();
+  const { page } = queryStates;
 
   const { total, size } = pagination;
 
@@ -25,7 +24,7 @@ export const ProductPagination = ({
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const getPageHref = (pageNumber: number) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(queryStates);
     params.set("page", String(pageNumber));
     return `?${params.toString()}`;
   };
