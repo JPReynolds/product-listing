@@ -7,9 +7,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "./ui/pagination";
-import { parseAsInteger, useQueryStates } from "nuqs";
-import { defaultPageNumber } from "@/lib/constants";
 import { useSearchParams } from "react-router";
+import { useProductParams } from "@/hooks/use-product-params";
 
 export const ProductPagination = ({
   pagination,
@@ -18,9 +17,7 @@ export const ProductPagination = ({
 }) => {
   const [searchParams] = useSearchParams();
 
-  const [{ page }] = useQueryStates({
-    page: parseAsInteger.withDefault(defaultPageNumber),
-  });
+  const [{ page }] = useProductParams();
 
   const { total, size } = pagination;
 

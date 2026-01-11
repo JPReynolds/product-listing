@@ -2,21 +2,19 @@ import { productsQueryOptions } from "@/api/products/products.queries";
 import { ProductList } from "@/components/product-list";
 import { ProductListSkeleton } from "@/components/product-list-skeleton";
 import { ProductPagination } from "@/components/product-pagination";
-import { defaultPageNumber, defaultSort } from "@/lib/constants";
+import { defaultSort } from "@/lib/constants";
 import { isValidSort } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { parseAsInteger, useQueryStates } from "nuqs";
 import { useParams } from "react-router";
+import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
+import { useProductParams } from "@/hooks/use-product-params";
 
 const headingId = "product-listing-heading";
 
 export default function ProductListing() {
   const { category } = useParams();
 
-  const [{ page, sort }] = useQueryStates({
-    page: parseAsInteger.withDefault(defaultPageNumber),
-    sort: parseAsInteger.withDefault(defaultSort),
-  });
+  const [{ page, sort }] = useProductParams();
 
   const { data, isPending } = useQuery(
     productsQueryOptions({
@@ -25,6 +23,8 @@ export default function ProductListing() {
       sort: isValidSort(sort) ? sort : defaultSort,
     })
   );
+
+  usePrefetchProducts({ pagination: data?.pagination });
 
   return (
     <div className="min-h-screen bg-background">
