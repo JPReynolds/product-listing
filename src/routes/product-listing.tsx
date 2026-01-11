@@ -9,6 +9,7 @@ import { useParams } from "react-router";
 import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
 import { useProductParams } from "@/hooks/use-product-params";
 import { ProductSort } from "@/components/product-sort";
+import { ProductFilters } from "@/components/product-filters";
 
 const headingId = "product-listing-heading";
 
@@ -39,18 +40,26 @@ export default function ProductListing() {
           </h1>
         </header>
 
-        <ProductSort />
+        <div className="flex flex-col lg:flex-row gap-6">
+          <aside className="w-full lg:w-64 shrink-0">
+            <ProductFilters />
+          </aside>
 
-        {isPending ? (
-          <ProductListSkeleton />
-        ) : (
-          data && (
-            <div className="flex flex-col gap-4">
-              <ProductList products={data.products} />
-              <ProductPagination pagination={data.pagination} />
-            </div>
-          )
-        )}
+          <div className="flex flex-col gap-4 flex-1 min-w-0">
+            <ProductSort />
+
+            {isPending ? (
+              <ProductListSkeleton />
+            ) : (
+              data && (
+                <div className="flex flex-col gap-4">
+                  <ProductList products={data.products} />
+                  <ProductPagination pagination={data.pagination} />
+                </div>
+              )
+            )}
+          </div>
+        </div>
       </section>
     </div>
   );
