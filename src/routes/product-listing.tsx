@@ -31,20 +31,21 @@ export default function ProductListing() {
     <div className="min-h-screen bg-background">
       <section
         aria-labelledby={headingId}
-        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-4"
       >
-        <header className="mb-8 border-b pb-6">
+        <header className="mb-8 border-b pb-8">
           <h1 id={headingId} className="text-3xl font-bold capitalize">
             {category}
           </h1>
         </header>
+
+        <ProductSort />
 
         {isPending ? (
           <ProductListSkeleton />
         ) : (
           data && (
             <div className="flex flex-col gap-4">
-              <ProductSort />
               <ProductList products={data.products} />
               <ProductPagination pagination={data.pagination} />
             </div>
