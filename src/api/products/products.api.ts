@@ -1,8 +1,4 @@
-import {
-  ProductSortOption,
-  type ProductResponse,
-  type ProductsRequest,
-} from "./products.type";
+import { type ProductResponse, type ProductsRequest } from "./products.type";
 
 const API_URL =
   "https://spanishinquisition.victorianplumbing.co.uk/interviews/listings";
@@ -16,13 +12,16 @@ export const fetchProducts = async (
     pageNumber: request.pageNumber ?? 0,
     size: request.size ?? 30,
     additionalPages: request.additionalPages ?? 0,
-    sort: request.sort ?? ProductSortOption.Recommended,
+    sort: request.sort ?? 1,
     ...(request.facets && { facets: request.facets }),
   };
 
   const response = await fetch(`${API_URL}?apiKey=${API_KEY}`, {
     method: "POST",
     body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   if (!response.ok) {

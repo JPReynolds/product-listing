@@ -9,21 +9,12 @@ export type ProductsRequest = {
   query: string;
   pageNumber: number;
   size: number;
-  additionalPages: number;
+  additionalPages?: number;
   sort: SortOption;
   facets?: Record<string, FacetFilter[]>;
 };
 
-// TODO - is this the best approach?
-export const ProductSortOption = {
-  Recommended: 1,
-  PriceLowToHigh: 2,
-  PriceHighToLow: 3,
-  LargestDiscount: 4,
-} as const;
-
-export type SortOption =
-  (typeof ProductSortOption)[keyof typeof ProductSortOption];
+export type SortOption = 1 | 2 | 3 | 4;
 
 export type Pagination = {
   from: number;
