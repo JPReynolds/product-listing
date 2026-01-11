@@ -1,4 +1,6 @@
 import { productsQueryOptions } from "@/api/products/products.queries";
+import { ProductList } from "@/components/product-list";
+import { ProductListSkeleton } from "@/components/product-list-skeleton";
 import {
   defaultPageNumber,
   defaultPageSize,
@@ -9,6 +11,8 @@ import { useQuery } from "@tanstack/react-query";
 import { parseAsInteger, useQueryStates } from "nuqs";
 import { useParams } from "react-router";
 
+const headingId = "product-listing-heading";
+
 export default function ProductListing() {
   const { category } = useParams();
 
@@ -18,7 +22,7 @@ export default function ProductListing() {
     sort: parseAsInteger.withDefault(defaultSort),
   });
 
-  const { data } = useQuery(
+  const { data, isPending } = useQuery(
     productsQueryOptions({
       query: category ?? "",
       pageNumber: page,
@@ -27,5 +31,23 @@ export default function ProductListing() {
     })
   );
 
-  return <div>{data?.products.length} products</div>;
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section aria-labelledby={headingId}>
+          <header className="mb-8 border-b pb-6">
+            <h1 id={headingId} className="text-3xl font-bold capitalize">
+              {category}
+            </h1>
+          </header>
+
+          {isPending ? (
+            <ProductListSkeleton />
+          ) : (
+            <ProductList products={data?.products ?? []} />
+          )}
+        </section>
+      </div>
+    </div>
+  );
 }

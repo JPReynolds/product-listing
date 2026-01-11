@@ -62,6 +62,7 @@ export type Price = {
   priceIncTax: number;
   priceExcTax: number;
   isOnPromotion: boolean;
+  discountPercentage: number;
 };
 
 export type Product = {

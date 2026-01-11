@@ -1,4 +1,8 @@
-import { type ProductResponse, type ProductsRequest } from "./products.type";
+import {
+  type Product,
+  type ProductResponse,
+  type ProductsRequest,
+} from "./products.type";
 
 const API_URL =
   "https://spanishinquisition.victorianplumbing.co.uk/interviews/listings";
@@ -28,5 +32,14 @@ export const fetchProducts = async (
     throw new Error(`Failed to fetch products: ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+
+  const products: Product[] = [...data.products].sort(
+    (a, b) => b.score - a.score
+  );
+
+  return {
+    ...data,
+    products,
+  };
 };

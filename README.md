@@ -7,7 +7,14 @@
 - route config ✅
 - api types ✅
 - fetchProducts (+ productsQueryOptions) ✅
-- ProductListing page
+- ProductListing page ✅
+- styling ✅
 - Sorting
 - Pagination
 - Filtering
+- error handling
+
+### nice to haves
+
+- show discounted price ✅
+- show if is out of stock
