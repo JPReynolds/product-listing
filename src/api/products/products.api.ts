@@ -1,4 +1,9 @@
 import {
+  defaultPageNumber,
+  defaultPageSize,
+  defaultSort,
+} from "@/lib/constants";
+import {
   type Product,
   type ProductResponse,
   type ProductsRequest,
@@ -13,10 +18,10 @@ export const fetchProducts = async (
 ): Promise<ProductResponse> => {
   const body: ProductsRequest = {
     query: request.query,
-    pageNumber: request.pageNumber ?? 0,
-    size: request.size ?? 30,
+    pageNumber: request.pageNumber ?? defaultPageNumber,
+    size: request.size ?? defaultPageSize,
     additionalPages: request.additionalPages ?? 0,
-    sort: request.sort ?? 1,
+    sort: request.sort ?? defaultSort,
     ...(request.facets && { facets: request.facets }),
   };
 
@@ -32,7 +37,7 @@ export const fetchProducts = async (
     throw new Error(`Failed to fetch products: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data: ProductResponse = await response.json();
 
   const products: Product[] = [...data.products].sort(
     (a, b) => b.score - a.score

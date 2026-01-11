@@ -16,5 +16,7 @@
 
 ### nice to haves
 
+- fix pagination logic, show ellipsis etc
 - show discounted price ✅
 - show if is out of stock
+- prefetch next page

@@ -8,7 +8,7 @@ export type FacetFilter = {
 export type ProductsRequest = {
   query: string;
   pageNumber: number;
-  size: number;
+  size?: number;
   additionalPages?: number;
   sort: SortOption;
   facets?: Record<string, FacetFilter[]>;
