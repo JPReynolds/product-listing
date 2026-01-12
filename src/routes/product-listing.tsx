@@ -1,21 +1,12 @@
-import { ProductList } from "@/components/product-list";
-import { ProductListSkeleton } from "@/components/product-list-skeleton";
-import { ProductPagination } from "@/components/product-pagination";
 import { ProductFilters } from "@/components/product-filters";
+import { ProductListWrapper } from "@/components/product-list-wrapper";
 import { ProductSort } from "@/components/product-sort";
-import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
-import { useProductsQuery } from "@/hooks/use-products-query";
 import { useParams } from "react-router";
 
 const headingId = "product-listing-heading";
 
 export default function ProductListing() {
   const { category } = useParams();
-
-  const { data, isPending } = useProductsQuery();
-
-  usePrefetchProducts({ pagination: data?.pagination });
-
   return (
     <div className="min-h-screen bg-background">
       <section
@@ -35,17 +26,7 @@ export default function ProductListing() {
 
           <div className="flex flex-col gap-4 flex-1 min-w-0">
             <ProductSort />
-
-            {isPending ? (
-              <ProductListSkeleton />
-            ) : (
-              data && (
-                <div className="flex flex-col gap-4">
-                  <ProductList products={data.products} />
-                  <ProductPagination pagination={data.pagination} />
-                </div>
-              )
-            )}
+            <ProductListWrapper />
           </div>
         </div>
       </section>
