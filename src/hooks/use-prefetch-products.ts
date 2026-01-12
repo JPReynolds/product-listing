@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import type { Pagination } from "@/api/products/products.type";
 import { useParams } from "react-router";
 import { useProductParams } from "./use-product-params";
+import { useFilters } from "./use-filters";
 
 export const usePrefetchProducts = ({
   pagination,
@@ -15,6 +16,7 @@ export const usePrefetchProducts = ({
   const queryClient = useQueryClient();
 
   const { category } = useParams();
+  const { filters } = useFilters();
 
   const [{ page, sort }] = useProductParams();
 
@@ -30,8 +32,9 @@ export const usePrefetchProducts = ({
           query: category ?? "",
           pageNumber: nextPage,
           sort: isValidSort(sort) ? sort : defaultSort,
+          facets: filters,
         })
       );
     }
-  }, [page, sort, pagination, queryClient, category]);
+  }, [page, sort, pagination, queryClient, category, filters]);
 };

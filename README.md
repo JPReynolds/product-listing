@@ -11,12 +11,9 @@
 - styling
 - Sorting ✅
 - Pagination ✅
-- Filtering
-  - Fetch all facets, by just fetching one product with no filters
-  - cross reference facets returned from filtered query with unfiltered query to check if it's disabled/zero count
-  - store filter identifiers with values in query params
-  - use all facets query to generate filter payload to pass to filtered query
+- Filtering ✅
 - error handling
+- do we need nuqs or stick with useSearchParams? currently using a hybrid due to dynamic filters
 
 ### nice to haves
 
@@ -24,3 +21,4 @@
 - show discounted price ✅
 - show if is out of stock
 - prefetch next page ✅
+- sort resets on filter change

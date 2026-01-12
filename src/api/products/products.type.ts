@@ -1,9 +1,13 @@
 export type PriceValue = { gte: number; lte: number };
 
+export type FilterValue = string | boolean | number | PriceValue;
+
 export type FacetFilter = {
   identifier: string;
-  value: string | boolean | PriceValue;
+  value: FilterValue;
 };
+
+export type FacetFilters = Record<string, FacetFilter[]>;
 
 export type ProductsRequest = {
   query: string;
@@ -11,7 +15,7 @@ export type ProductsRequest = {
   size?: number;
   additionalPages?: number;
   sort: SortOption;
-  facets?: Record<string, FacetFilter[]>;
+  facets?: FacetFilters;
 };
 
 export type SortOption = 1 | 2 | 3 | 4;

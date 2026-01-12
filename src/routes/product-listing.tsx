@@ -1,30 +1,18 @@
-import { productsQueryOptions } from "@/api/products/products.queries";
 import { ProductList } from "@/components/product-list";
 import { ProductListSkeleton } from "@/components/product-list-skeleton";
 import { ProductPagination } from "@/components/product-pagination";
-import { defaultSort } from "@/lib/constants";
-import { isValidSort } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router";
-import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
-import { useProductParams } from "@/hooks/use-product-params";
-import { ProductSort } from "@/components/product-sort";
 import { ProductFilters } from "@/components/product-filters";
+import { ProductSort } from "@/components/product-sort";
+import { usePrefetchProducts } from "@/hooks/use-prefetch-products";
+import { useProductsQuery } from "@/hooks/use-products-query";
+import { useParams } from "react-router";
 
 const headingId = "product-listing-heading";
 
 export default function ProductListing() {
   const { category } = useParams();
 
-  const [{ page, sort }] = useProductParams();
-
-  const { data, isPending } = useQuery(
-    productsQueryOptions({
-      query: category ?? "",
-      pageNumber: page,
-      sort: isValidSort(sort) ? sort : defaultSort,
-    })
-  );
+  const { data, isPending } = useProductsQuery();
 
   usePrefetchProducts({ pagination: data?.pagination });
 
