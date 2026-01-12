@@ -15,8 +15,7 @@
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm (recommended) or npm
+- [pnpm](https://pnpm.io/installation)
 
 ### Installation
 
@@ -35,7 +34,7 @@
 
 3. Start the development server:
 
-   ```b
+   ```
    pnpm dev
    ```
 
