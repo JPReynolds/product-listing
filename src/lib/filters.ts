@@ -21,14 +21,11 @@ export const parseAsCommaSeparated = createParser<string[]>({
   serialize(value) {
     return value.join(",");
   },
-  eq(a, b) {
-    return a.length === b.length && a.every((v, i) => v === b[i]);
-  },
 });
 
 export const parseAsPriceRange = createParser<PriceValue>({
   parse(value) {
-    const match = value.match(/^(\d+)_(\d+)$/) ?? value.match(/^(\d+)-(\d+)$/);
+    const match = value.match(/^(\d+)[_-](\d+)$/);
     if (!match) return null;
     return { gte: Number(match[1]), lte: Number(match[2]) };
   },
@@ -51,17 +48,32 @@ export const isPriceValue = (value: unknown): value is PriceValue => {
   );
 };
 
-export const isPriceRangeString = (value: string): boolean => {
-  return parseAsPriceRange.parse(value) !== null;
+const findMatchingOption = (
+  facet: Facet,
+  selectedValue: string
+): FacetFilter | null => {
+  const priceValue = parseAsPriceRange.parse(selectedValue);
+
+  if (priceValue) {
+    const option = facet.options.find(
+      (o) => isPriceValue(o.value) && parseAsPriceRange.eq(o.value, priceValue)
+    );
+    return option ? { identifier: option.identifier, value: priceValue } : null;
+  }
+
+  const option = facet.options.find(({ value }) => value === selectedValue);
+  return option ? { identifier: option.identifier, value: option.value } : null;
 };
 
 export const generateFilters = (
-  filters: FilterParams,
+  filterParams: FilterParams,
   baseFacets: Facet[]
 ): FacetFilters => {
   const facets: FacetFilters = {};
 
-  for (const [facetIdentifier, selectedValues] of Object.entries(filters)) {
+  for (const [facetIdentifier, selectedValues] of Object.entries(
+    filterParams
+  )) {
     if (selectedValues.length === 0) continue;
 
     const facet = baseFacets.find(
@@ -69,38 +81,9 @@ export const generateFilters = (
     );
     if (!facet) continue;
 
-    const facetFilters: FacetFilter[] = [];
-
-    for (const selectedValue of selectedValues) {
-      const priceValue = parseAsPriceRange.parse(selectedValue);
-
-      if (priceValue) {
-        const option = facet.options.find((o) => {
-          if (isPriceValue(o.value)) {
-            return parseAsPriceRange.eq(o.value, priceValue);
-          }
-          return false;
-        });
-
-        if (option) {
-          facetFilters.push({
-            identifier: option.identifier,
-            value: priceValue,
-          });
-        }
-      } else {
-        const option = facet.options.find(
-          ({ value }) => value === selectedValue
-        );
-
-        if (option) {
-          facetFilters.push({
-            identifier: option.identifier,
-            value: option.value,
-          });
-        }
-      }
-    }
+    const facetFilters = selectedValues
+      .map((value) => findMatchingOption(facet, value))
+      .filter((f): f is FacetFilter => f !== null);
 
     if (facetFilters.length > 0) {
       facets[facetIdentifier] = facetFilters;

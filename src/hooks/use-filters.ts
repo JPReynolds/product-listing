@@ -1,8 +1,7 @@
-import type { FacetFilters, FilterValue } from "@/api/products/products.type";
+import type { FacetFilters } from "@/api/products/products.type";
 import { RESERVED_PARAMS } from "@/lib/constants";
 import {
   generateFilters,
-  getFilterParam,
   parseAsCommaSeparated,
   type FilterParams,
 } from "@/lib/filters";
@@ -10,8 +9,13 @@ import { useFacetsQuery } from "./use-facets-query";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-export const useFilters = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+export type UseFiltersReturn = {
+  filters: FacetFilters;
+  filterParams: FilterParams;
+};
+
+export const useFilters = (): UseFiltersReturn => {
+  const [searchParams] = useSearchParams();
 
   const { data: facets } = useFacetsQuery();
 
@@ -20,7 +24,7 @@ export const useFilters = () => {
 
     if (!facets) return result;
 
-    const identifiers = new Set(facets.map((f) => f.identifier));
+    const identifiers = new Set(facets.map(({ identifier }) => identifier));
 
     for (const [key, value] of searchParams.entries()) {
       if (RESERVED_PARAMS.includes(key) || !identifiers.has(key)) continue;
@@ -39,66 +43,8 @@ export const useFilters = () => {
     return generateFilters(filterParams, facets);
   }, [filterParams, facets]);
 
-  const isFilterSelected = (identifier: string, value: FilterValue) => {
-    const filterParam = getFilterParam(value);
-    return filterParams[identifier]?.includes(filterParam) ?? false;
-  };
-
-  const toggleFilter = (identifier: string, value: FilterValue) => {
-    const param = getFilterParam(value);
-    setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        const filterValues =
-          parseAsCommaSeparated.parse(params.get(identifier) ?? "") ?? [];
-
-        const paramIndex = filterValues.indexOf(param);
-
-        if (paramIndex >= 0) {
-          filterValues.splice(paramIndex, 1);
-        } else {
-          filterValues.push(param);
-        }
-
-        if (filterValues.length > 0) {
-          params.set(identifier, parseAsCommaSeparated.serialize(filterValues));
-        } else {
-          params.delete(identifier);
-        }
-
-        params.set("page", "1");
-
-        return params;
-      },
-      { replace: true }
-    );
-  };
-
-  const clearFilters = () => {
-    setSearchParams(
-      (prev) => {
-        const newParams = new URLSearchParams();
-
-        for (const key of RESERVED_PARAMS) {
-          const value = prev.get(key);
-          if (value) {
-            newParams.set(key, value);
-          }
-        }
-
-        return newParams;
-      },
-      { replace: true }
-    );
-  };
-
-  const hasActiveFilters = Object.keys(filterParams).length > 0;
-
   return {
     filters,
-    isFilterSelected,
-    toggleFilter,
-    clearFilters,
-    hasActiveFilters,
+    filterParams,
   };
 };

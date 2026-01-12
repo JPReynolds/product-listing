@@ -72,3 +72,4 @@
 - show if is out of stock
 - prefetch next page ✅
 - sort resets on filter change
+- handle loading on filter counts
