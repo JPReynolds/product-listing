@@ -73,3 +73,5 @@
 - prefetch next page ✅
 - sort resets on filter change
 - handle loading on filter counts
+- prefetch in route loaders?
+- revisit filter handling/logic. Can we reduce loops/logic in the render by hydrating the facets at the query level?
