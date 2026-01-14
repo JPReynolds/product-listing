@@ -1,71 +1,34 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { useFilters } from "@/hooks/use-filters";
 import { Skeleton } from "./ui/skeleton";
 import { Button } from "./ui/button";
 import { useProductsQuery } from "@/hooks/use-products-query";
 import { useFacetsQuery } from "@/hooks/use-facets-query";
-import { getFilterParam, parseAsCommaSeparated } from "@/lib/filters";
-import type { FilterValue } from "@/api/products/products.type";
-import { useSearchParams } from "react-router";
-import { RESERVED_PARAMS } from "@/lib/constants";
+import { parseAsFilters, serializeFilterValue } from "@/lib/filters";
+import { useQueryState } from "nuqs";
 
 export const ProductFilters = () => {
-  const [, setSearchParams] = useSearchParams();
-
   const { data: baseFacets, isPending: isPendingBaseFacets } = useFacetsQuery();
-
   const { data } = useProductsQuery();
-
   const filteredFacets = data?.facets;
 
-  const { filterParams } = useFilters();
+  const [filterParams, setFilterParams] = useQueryState(
+    "filters",
+    parseAsFilters.withDefault({})
+  );
 
-  const toggleFilter = (identifier: string, value: FilterValue) => {
-    const param = getFilterParam(value);
-    setSearchParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        const filterValues =
-          parseAsCommaSeparated.parse(params.get(identifier) ?? "") ?? [];
+  const toggleFilter = (identifier: string, value: string) => {
+    const currentValues = filterParams[identifier] ?? [];
+    const isSelected = currentValues.includes(value);
 
-        const paramIndex = filterValues.indexOf(param);
+    const newValues = isSelected
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value];
 
-        if (paramIndex >= 0) {
-          filterValues.splice(paramIndex, 1);
-        } else {
-          filterValues.push(param);
-        }
-
-        if (filterValues.length > 0) {
-          params.set(identifier, parseAsCommaSeparated.serialize(filterValues));
-        } else {
-          params.delete(identifier);
-        }
-
-        params.set("page", "1");
-
-        return params;
-      },
-      { replace: true }
-    );
+    setFilterParams({ ...filterParams, [identifier]: newValues });
   };
 
   const clearFilters = () => {
-    setSearchParams(
-      (prev) => {
-        const newParams = new URLSearchParams();
-
-        for (const key of RESERVED_PARAMS) {
-          const value = prev.get(key);
-          if (value) {
-            newParams.set(key, value);
-          }
-        }
-
-        return newParams;
-      },
-      { replace: true }
-    );
+    setFilterParams(null);
   };
 
   if (isPendingBaseFacets) {
@@ -100,50 +63,50 @@ export const ProductFilters = () => {
       </div>
 
       <div className="space-y-6">
-        {baseFacets &&
-          baseFacets.map((facet) => (
-            <div key={facet.identifier}>
-              <h3 className="font-medium text-sm mb-3">{facet.displayName}</h3>
-              <div className="space-y-2">
-                {facet.options.map((option) => {
-                  const isSelected =
-                    filterParams[facet.identifier]?.includes(
-                      getFilterParam(option.value)
-                    ) ?? false;
+        {baseFacets?.map((facet) => (
+          <div key={facet.identifier}>
+            <h3 className="font-medium text-sm mb-3">{facet.displayName}</h3>
+            <div className="space-y-2">
+              {facet.options.map((option) => {
+                const serializedValue = serializeFilterValue(option.value);
 
-                  const filteredOption = filteredFacets
-                    ?.find((f) => f.identifier === facet.identifier)
-                    ?.options.find((o) => o.identifier === option.identifier);
+                const isSelected =
+                  filterParams[facet.identifier]?.includes(serializedValue) ??
+                  false;
 
-                  const isDisabled = !filteredOption && !isSelected;
+                const filteredOption = filteredFacets
+                  ?.find((f) => f.identifier === facet.identifier)
+                  ?.options.find((o) => o.identifier === option.identifier);
 
-                  return (
-                    <label
-                      key={option.identifier}
-                      htmlFor={option.identifier}
-                      className="flex items-center gap-2"
-                    >
-                      <Checkbox
-                        id={option.identifier}
-                        checked={isSelected}
-                        disabled={isDisabled}
-                        className="cursor-pointer"
-                        onCheckedChange={() =>
-                          toggleFilter(facet.identifier, option.value)
-                        }
-                      />
-                      <span className="text-sm flex-1">
-                        {option.displayValue}
-                      </span>
-                      <span className="text-xs">
-                        ({filteredOption?.productCount ?? 0})
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+                const isDisabled = !filteredOption && !isSelected;
+
+                return (
+                  <label
+                    key={option.identifier}
+                    htmlFor={option.identifier}
+                    className="flex items-center gap-2"
+                  >
+                    <Checkbox
+                      id={option.identifier}
+                      checked={isSelected}
+                      disabled={isDisabled}
+                      className="cursor-pointer"
+                      onCheckedChange={() =>
+                        toggleFilter(facet.identifier, serializedValue)
+                      }
+                    />
+                    <span className="text-sm flex-1">
+                      {option.displayValue}
+                    </span>
+                    <span className="text-xs">
+                      ({filteredOption?.productCount ?? 0})
+                    </span>
+                  </label>
+                );
+              })}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
     </div>
   );

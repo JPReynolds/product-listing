@@ -1,4 +1,4 @@
-import { createParser } from "nuqs";
+import { createMultiParser, createParser } from "nuqs";
 import type {
   Facet,
   FacetFilters,
@@ -9,23 +9,9 @@ import type {
 
 export type FilterParams = Record<string, string[]>;
 
-export const parseAsCommaSeparated = createParser<string[]>({
-  parse(value) {
-    if (!value) return null;
-    const items = value
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean);
-    return items.length > 0 ? items : null;
-  },
-  serialize(value) {
-    return value.join(",");
-  },
-});
-
 export const parseAsPriceRange = createParser<PriceValue>({
   parse(value) {
-    const match = value.match(/^(\d+)[_-](\d+)$/);
+    const match = value.match(/^(\d+)_(\d+)$/);
     if (!match) return null;
     return { gte: Number(match[1]), lte: Number(match[2]) };
   },
@@ -48,52 +34,80 @@ export const isPriceValue = (value: unknown): value is PriceValue => {
   );
 };
 
-const findMatchingOption = (
-  facet: Facet,
-  selectedValue: string
-): FacetFilter | null => {
-  const priceValue = parseAsPriceRange.parse(selectedValue);
+const parseAsKeyValue = createParser({
+  parse: (val) => {
+    const [key, value] = val.split(":");
+    if (!key || !value) return null;
+    return { key, value };
+  },
+  serialize: ({ key, value }) => `${key}:${value}`,
+});
 
-  if (priceValue) {
-    const option = facet.options.find(
-      (o) => isPriceValue(o.value) && parseAsPriceRange.eq(o.value, priceValue)
+export const parseAsFilters = createMultiParser<FilterParams>({
+  parse: (values) => {
+    const result: FilterParams = {};
+
+    for (const v of values) {
+      const parsed = parseAsKeyValue.parse(v);
+      if (!parsed) continue;
+
+      const { key, value } = parsed;
+
+      if (!result[key]) {
+        result[key] = [];
+      }
+      result[key].push(value);
+    }
+
+    return Object.keys(result).length === 0 ? null : result;
+  },
+  serialize: (values) => {
+    return Object.entries(values).flatMap(([key, vals]) =>
+      vals.map((value) => parseAsKeyValue.serialize({ key, value }))
     );
-    return option ? { identifier: option.identifier, value: priceValue } : null;
-  }
+  },
+});
 
-  const option = facet.options.find(({ value }) => value === selectedValue);
-  return option ? { identifier: option.identifier, value: option.value } : null;
-};
-
-export const generateFilters = (
+export const hydrateFilters = (
   filterParams: FilterParams,
-  baseFacets: Facet[]
+  facets: Facet[]
 ): FacetFilters => {
-  const facets: FacetFilters = {};
+  const result: FacetFilters = {};
 
-  for (const [facetIdentifier, selectedValues] of Object.entries(
-    filterParams
-  )) {
-    if (selectedValues.length === 0) continue;
-
-    const facet = baseFacets.find(
-      ({ identifier }) => identifier === facetIdentifier
-    );
+  for (const [facetId, selectedValues] of Object.entries(filterParams)) {
+    const facet = facets.find(({ identifier }) => identifier === facetId);
     if (!facet) continue;
 
     const facetFilters = selectedValues
-      .map((value) => findMatchingOption(facet, value))
+      .map((selectedValue) => {
+        const priceValue = parseAsPriceRange.parse(selectedValue);
+
+        if (priceValue) {
+          const option = facet.options.find(
+            (o) =>
+              isPriceValue(o.value) && parseAsPriceRange.eq(o.value, priceValue)
+          );
+          return option
+            ? { identifier: option.identifier, value: priceValue }
+            : null;
+        }
+
+        const option = facet.options.find((o) => o.value === selectedValue);
+        return option
+          ? { identifier: option.identifier, value: option.value }
+          : null;
+      })
       .filter((f): f is FacetFilter => f !== null);
 
     if (facetFilters.length > 0) {
-      facets[facetIdentifier] = facetFilters;
+      result[facetId] = facetFilters;
     }
   }
 
-  return facets;
+  return result;
 };
 
-export const getFilterParam = (value: FilterValue): string => {
+export const serializeFilterValue = (value: FilterValue): string => {
   if (isPriceValue(value)) {
     return parseAsPriceRange.serialize(value);
   }
